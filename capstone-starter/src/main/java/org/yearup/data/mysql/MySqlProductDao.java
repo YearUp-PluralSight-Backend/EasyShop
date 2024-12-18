@@ -80,8 +80,9 @@ public class MySqlProductDao extends MySqlDaoBase implements ProductDao {
                 Product product = mapRow(row);
                 products.add(product);
             }
+            log.info("Retrieved products by category id: {}", categoryId);
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            log.error("Failed to get products by category id: {}", categoryId);
         }
 
         return products;
@@ -98,10 +99,11 @@ public class MySqlProductDao extends MySqlDaoBase implements ProductDao {
             ResultSet row = statement.executeQuery();
 
             if (row.next()) {
+                log.info("Retrieved product with id: {}", productId);
                 return mapRow(row);
             }
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            log.error("Failed to get product with id: {}", productId);
         }
         return null;
     }
@@ -112,6 +114,17 @@ public class MySqlProductDao extends MySqlDaoBase implements ProductDao {
         String sql = "INSERT INTO products(name, price, category_id, description, color, image_url, stock, featured) " +
                 " VALUES (?, ?, ?, ?, ?, ?, ?, ?);";
 
+        /*
+         *     private int productId;
+         *     private String name;
+         *     private BigDecimal price;
+         *     private int categoryId;
+         *     private String description;
+         *     private String color;
+         *     private int stock;
+         *     private boolean isFeatured;
+         *     private String imageUrl;
+         */
         try (Connection connection = getConnection()) {
             PreparedStatement statement = connection.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS);
             statement.setString(1, product.getName());
@@ -122,7 +135,6 @@ public class MySqlProductDao extends MySqlDaoBase implements ProductDao {
             statement.setString(6, product.getImageUrl());
             statement.setInt(7, product.getStock());
             statement.setBoolean(8, product.isFeatured());
-
             int rowsAffected = statement.executeUpdate();
 
             if (rowsAffected > 0) {
@@ -134,11 +146,13 @@ public class MySqlProductDao extends MySqlDaoBase implements ProductDao {
                     int orderId = generatedKeys.getInt(1);
 
                     // get the newly inserted category
+
+                    log.info("Created product with id: {}", orderId);
                     return getById(orderId);
                 }
             }
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            log.error("Failed to create product");
         }
         return null;
     }
@@ -167,10 +181,10 @@ public class MySqlProductDao extends MySqlDaoBase implements ProductDao {
             statement.setInt(7, product.getStock());
             statement.setBoolean(8, product.isFeatured());
             statement.setInt(9, productId);
-
             statement.executeUpdate();
+            log.info("Updated product with id: {}", productId);
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            log.error("Failed to update product with id: {}", productId);
         }
     }
 
@@ -183,10 +197,11 @@ public class MySqlProductDao extends MySqlDaoBase implements ProductDao {
         try (Connection connection = getConnection()) {
             PreparedStatement statement = connection.prepareStatement(sql);
             statement.setInt(1, productId);
-
             statement.executeUpdate();
+            log.info("Deleted product with id: {}", productId);
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            log.error("Failed to delete product with id: {}", productId);
+
         }
     }
 

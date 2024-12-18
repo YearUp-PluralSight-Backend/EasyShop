@@ -13,9 +13,9 @@ import java.util.List;
 
 @RestController
 @RequestMapping("products")
-@CrossOrigin
+@CrossOrigin("*")
 public class ProductsController {
-    private ProductDao productDao;
+    private final ProductDao productDao;
 
     @Autowired
     public ProductsController(ProductDao productDao) {
@@ -27,8 +27,7 @@ public class ProductsController {
     public List<Product> search(@RequestParam(name = "cat", required = false) Integer categoryId,
                                 @RequestParam(name = "minPrice", required = false) BigDecimal minPrice,
                                 @RequestParam(name = "maxPrice", required = false) BigDecimal maxPrice,
-                                @RequestParam(name = "color", required = false) String color
-    ) {
+                                @RequestParam(name = "color", required = false) String color) {
         try {
             return productDao.search(categoryId, minPrice, maxPrice, color);
         } catch (Exception ex) {
@@ -61,7 +60,7 @@ public class ProductsController {
         }
     }
 
-    @PutMapping("{id}")
+    @PutMapping("/{id}")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     public void updateProduct(@PathVariable int id, @RequestBody Product product) {
         try {
