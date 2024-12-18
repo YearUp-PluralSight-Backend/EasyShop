@@ -1,7 +1,7 @@
 package org.yearup.controllers;
 
-import javax.validation.Valid;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -12,22 +12,24 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
-
-import org.yearup.models.Profile;
 import org.yearup.data.ProfileDao;
 import org.yearup.data.UserDao;
+import org.yearup.models.Profile;
+import org.yearup.models.User;
 import org.yearup.models.authentication.LoginDto;
 import org.yearup.models.authentication.LoginResponseDto;
 import org.yearup.models.authentication.RegisterUserDto;
-import org.yearup.models.User;
 import org.yearup.security.jwt.JWTFilter;
 import org.yearup.security.jwt.TokenProvider;
+
+import javax.validation.Valid;
 
 @RestController
 @CrossOrigin
 @PreAuthorize("permitAll()")
 public class AuthenticationController {
 
+    private static final Logger log = LoggerFactory.getLogger(AuthenticationController.class);
     private final TokenProvider tokenProvider;
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
     private UserDao userDao;
@@ -50,18 +52,17 @@ public class AuthenticationController {
         SecurityContextHolder.getContext().setAuthentication(authentication);
         String jwt = tokenProvider.createToken(authentication, false);
 
-        try
-        {
+        try {
             User user = userDao.getByUserName(loginDto.getUsername());
+            log.info("{}", user);
 
             if (user == null) throw new ResponseStatusException(HttpStatus.NOT_FOUND);
 
             HttpHeaders httpHeaders = new HttpHeaders();
             httpHeaders.add(JWTFilter.AUTHORIZATION_HEADER, "Bearer " + jwt);
             return new ResponseEntity<>(new LoginResponseDto(jwt, user), httpHeaders, HttpStatus.OK);
-        }
-        catch(Exception ex)
-        {
+        } catch (Exception ex) {
+            log.error("Error logging in", ex);
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Oops... our bad.");
         }
     }
@@ -70,12 +71,12 @@ public class AuthenticationController {
     @RequestMapping(value = "/register", method = RequestMethod.POST)
     public ResponseEntity<User> register(@Valid @RequestBody RegisterUserDto newUser) {
 
-        try
-        {
+        try {
             boolean exists = userDao.exists(newUser.getUsername());
-            if (exists)
-            {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "User Already Exists.");
+            if (exists) {
+                return ResponseEntity
+                        .status(HttpStatus.CONFLICT) // 409
+                        .body(null);
             }
 
             // create user
@@ -86,10 +87,10 @@ public class AuthenticationController {
             profile.setUserId(user.getId());
             profileDao.create(profile);
 
+            log.info("{}", user);
             return new ResponseEntity<>(user, HttpStatus.CREATED);
-        }
-        catch (Exception e)
-        {
+        } catch (Exception e) {
+            log.error("Error creating user", e);
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Oops... our bad.");
         }
     }
