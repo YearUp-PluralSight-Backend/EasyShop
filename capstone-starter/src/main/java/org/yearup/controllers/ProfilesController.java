@@ -38,8 +38,28 @@ public class ProfilesController {
         return ResponseEntity.ok(profileDao.getProfileByUserId(userId).orElse(null));
     }
 
+    @GetMapping("/{id}")
+    @PreAuthorize("permitAll()")
+    public ResponseEntity<Profile> getById(@PathVariable int id) {
+        Profile profile = profileDao.getProfileByUserId(id).orElse(null);
+
+        if (profile == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(profile);
+    }
 
 
+    @PutMapping("")
+    @PreAuthorize("permitAll()")
+    public ResponseEntity<Profile> updateProfile(@RequestBody Profile profile) {
+        Profile updatedProfile = profileDao.updateProfile(profile).orElse(null);
+
+        if (updatedProfile == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(updatedProfile);
+    }
 
 }
 

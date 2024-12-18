@@ -73,7 +73,31 @@ public class MySqlProfileDao extends MySqlDaoBase implements ProfileDao {
 
     @Override
     public Optional<Profile> updateProfile(Profile profile) {
-        return Optional.empty();
+
+        try(Connection connection = getConnection()) {
+            String sql = "UPDATE profiles SET first_name = ?, last_name = ?, phone = ?, email = ?, address = ?, city = ?, state = ?, zip = ? WHERE user_id = ?";
+            PreparedStatement ps = connection.prepareStatement(sql);
+            ps.setString(1, profile.getFirstName());
+            ps.setString(2, profile.getLastName());
+            ps.setString(3, profile.getPhone());
+            ps.setString(4, profile.getEmail());
+            ps.setString(5, profile.getAddress());
+            ps.setString(6, profile.getCity());
+            ps.setString(7, profile.getState());
+            ps.setString(8, profile.getZip());
+            ps.setInt(9, profile.getUserId());
+
+            int rows = ps.executeUpdate();
+            if (rows > 0) {
+                log.info("Profile updated: {}", profile);
+                return Optional.of(profile);
+            } else {
+                return Optional.empty();
+            }
+        } catch (SQLException e) {
+            log.error("Error updating profile", e);
+            return Optional.empty();
+        }
     }
 
     public Profile mapToRow(ResultSet rs) throws SQLException {
