@@ -20,7 +20,7 @@ import java.util.List;
 @RequestMapping("/categories")
 @CrossOrigin
 public class CategoriesController {
-    private CategoryDao categoryDao;
+    private final CategoryDao categoryDao;
     private ProductDao productDao;
 
 
@@ -84,7 +84,11 @@ public class CategoriesController {
 
     // add annotation to call this method for a DELETE action - the url path must include the categoryId
     // add annotation to ensure that only an ADMIN can call this function
-    public void deleteCategory(@PathVariable int id) {
+    @DeleteMapping("{id}")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public ResponseEntity<?> deleteCategory(@PathVariable int id) {
         // delete the category by id
+        categoryDao.delete(id);
+        return ResponseEntity.noContent().build();
     }
 }

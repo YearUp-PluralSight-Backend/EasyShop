@@ -99,6 +99,14 @@ public class MySqlCategoryDao extends MySqlDaoBase implements CategoryDao {
     @Override
     public void delete(int categoryId) {
         // delete category
+        try (Connection connection = getConnection(); PreparedStatement statement = connection.prepareStatement("DELETE FROM categories WHERE category_id = ?")) {
+            statement.setInt(1, categoryId);
+            statement.executeUpdate();
+            log.info("Category deleted successfully with id: {}", categoryId);
+        } catch (SQLException e) {
+            log.error("Error occurred while deleting category", e);
+        }
+
     }
 
     private Category mapRow(ResultSet row) throws SQLException {
@@ -106,13 +114,11 @@ public class MySqlCategoryDao extends MySqlDaoBase implements CategoryDao {
         String name = row.getString("name");
         String description = row.getString("description");
 
-        Category category = new Category() {{
+        return new Category() {{
             setCategoryId(categoryId);
             setName(name);
             setDescription(description);
         }};
-
-        return category;
     }
 
 }
