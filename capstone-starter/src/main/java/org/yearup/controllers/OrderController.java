@@ -1,6 +1,8 @@
 package org.yearup.controllers;
 
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -24,6 +26,7 @@ import java.util.Optional;
 public class OrderController {
 
 
+    private static final Logger log = LoggerFactory.getLogger(OrderController.class);
     private final OrderDao orderDao;
     private final UserDao userDao;
     private final ShoppingCartDao shoppingCartDao;
@@ -39,7 +42,6 @@ public class OrderController {
     @PostMapping
     @PreAuthorize("hasRole('ROLE_USER')")
     public ResponseEntity<Order> createOrder(Principal principal) {
-
         Optional<Order> newOrder = Optional.empty();
         // get the currently logged in username
         String userName = principal.getName();
@@ -53,6 +55,7 @@ public class OrderController {
             newOrder = orderDao.create(byUserId.get(), userId);
 
         }
+        log.info("Order created: {}", newOrder);
         return newOrder.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.status(500).build());
 
     }

@@ -1,5 +1,7 @@
 package org.yearup.models;
 
+import java.util.Objects;
+
 public class Profile
 {
     private int userId;
@@ -117,5 +119,33 @@ public class Profile
     public void setZip(String zip)
     {
         this.zip = zip;
+    }
+
+    @Override
+    public String toString() {
+        return "Profile{" +
+                "userId=" + userId +
+                ", firstName='" + firstName + '\'' +
+                ", lastName='" + lastName + '\'' +
+                ", phone='" + phone + '\'' +
+                ", email='" + email + '\'' +
+                ", address='" + address + '\'' +
+                ", city='" + city + '\'' +
+                ", state='" + state + '\'' +
+                ", zip='" + zip + '\'' +
+                '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Profile profile = (Profile) o;
+        return getUserId() == profile.getUserId() && Objects.equals(getFirstName(), profile.getFirstName()) && Objects.equals(getLastName(), profile.getLastName()) && Objects.equals(getPhone(), profile.getPhone()) && Objects.equals(getEmail(), profile.getEmail()) && Objects.equals(getAddress(), profile.getAddress()) && Objects.equals(getCity(), profile.getCity()) && Objects.equals(getState(), profile.getState()) && Objects.equals(getZip(), profile.getZip());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getUserId(), getFirstName(), getLastName(), getPhone(), getEmail(), getAddress(), getCity(), getState(), getZip());
     }
 }

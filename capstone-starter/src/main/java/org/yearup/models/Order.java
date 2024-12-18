@@ -2,6 +2,7 @@ package org.yearup.models;
 
 import java.math.BigDecimal;
 import java.sql.Date;
+import java.util.Objects;
 
 public class Order {
 
@@ -73,5 +74,18 @@ public class Order {
                 ", shippingAddress=" + shippingAddress +
                 ", shippingAmount=" + shippingAmount +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Order order = (Order) o;
+        return getOrderId() == order.getOrderId() && getUserId() == order.getUserId() && Objects.equals(getOrderDate(), order.getOrderDate()) && Objects.equals(getShippingAddress(), order.getShippingAddress()) && Objects.equals(getShippingAmount(), order.getShippingAmount());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getOrderId(), getUserId(), getOrderDate(), getShippingAddress(), getShippingAmount());
     }
 }

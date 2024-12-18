@@ -13,10 +13,7 @@ import org.yearup.models.ShoppingCart;
 
 import javax.sql.DataSource;
 import java.math.BigDecimal;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.Optional;
 
 
@@ -44,7 +41,22 @@ public class MySqlOrderDao extends MySqlDaoBase implements OrderDao {
             statement.setString(4, profileByUserId.get().getCity());
             statement.setString(5, profileByUserId.get().getState());
             statement.setString(6, profileByUserId.get().getZip());
-            statement.setBigDecimal(7, new BigDecimal(10.00));
+            statement.setBigDecimal(7, new BigDecimal("10.00"));
+            int rowsAffected = statement.executeUpdate();
+
+            if (rowsAffected > 0) {
+                // Retrieve the generated keys
+                ResultSet generatedKeys = statement.getGeneratedKeys();
+
+                if (generatedKeys.next()) {
+                    // Retrieve the auto-incremented ID
+                    int orderId = generatedKeys.getInt(1);
+
+                    // get the newly inserted category
+
+                    log.info("Order created: {}", orderId);
+                    return getByOrderId(orderId);}
+            }
         } catch (Exception e) {
             log.error("Error creating order", e);
             return Optional.empty();

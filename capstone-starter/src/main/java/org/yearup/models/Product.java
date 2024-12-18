@@ -1,6 +1,7 @@
 package org.yearup.models;
 
 import java.math.BigDecimal;
+import java.util.Objects;
 
 public class Product
 {
@@ -119,5 +120,34 @@ public class Product
     public void setImageUrl(String imageUrl)
     {
         this.imageUrl = imageUrl;
+    }
+
+    @Override
+    public String toString() {
+        return "Product{" +
+                "productId=" + productId +
+                ", name='" + name + '\'' +
+                ", price=" + price +
+                ", categoryId=" + categoryId +
+                ", description='" + description + '\'' +
+                ", color='" + color + '\'' +
+                ", stock=" + stock +
+                ", isFeatured=" + isFeatured +
+                ", imageUrl='" + imageUrl + '\'' +
+                '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Product product = (Product) o;
+        return getProductId() == product.getProductId() && getCategoryId() == product.getCategoryId() && getStock() == product.getStock() && isFeatured() == product.isFeatured() && Objects.equals(getName(), product.getName()) && Objects.equals(getPrice(), product.getPrice()) && Objects.equals(getDescription(), product.getDescription()) && Objects.equals(getColor(), product.getColor()) && Objects.equals(getImageUrl(), product.getImageUrl());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getProductId(), getName(), getPrice(), getCategoryId(), getDescription(), getColor(), getStock(), isFeatured(), getImageUrl());
     }
 }

@@ -1,5 +1,7 @@
 package org.yearup.models;
 
+import java.util.Objects;
+
 public class Category
 {
     private int categoryId;
@@ -45,5 +47,27 @@ public class Category
     public void setDescription(String description)
     {
         this.description = description;
+    }
+
+    @Override
+    public String toString() {
+        return "Category{" +
+                "categoryId=" + categoryId +
+                ", name='" + name + '\'' +
+                ", description='" + description + '\'' +
+                '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Category category = (Category) o;
+        return getCategoryId() == category.getCategoryId() && Objects.equals(getName(), category.getName()) && Objects.equals(getDescription(), category.getDescription());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getCategoryId(), getName(), getDescription());
     }
 }

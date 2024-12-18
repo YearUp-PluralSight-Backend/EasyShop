@@ -1,5 +1,7 @@
 package org.yearup.controllers;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -15,9 +17,9 @@ import java.security.Principal;
 @RequestMapping("/profile")
 @CrossOrigin
 public class ProfilesController {
-
-    private ProfileDao profileDao;
-    private UserDao userDao;
+    private static final Logger log = LoggerFactory.getLogger(ProfilesController.class);
+    private final ProfileDao profileDao;
+    private final UserDao userDao;
 
     @Autowired
     public ProfilesController(ProfileDao profileDao, UserDao userDao) {
@@ -34,7 +36,6 @@ public class ProfilesController {
         // find database user by userId
         User user = userDao.getByUserName(userName);
         int userId = user.getId();
-
         return ResponseEntity.ok(profileDao.getProfileByUserId(userId).orElse(null));
     }
 
@@ -46,6 +47,7 @@ public class ProfilesController {
         if (profile == null) {
             return ResponseEntity.notFound().build();
         }
+        log.info("Profile found: {}", profile);
         return ResponseEntity.ok(profile);
     }
 
@@ -58,6 +60,7 @@ public class ProfilesController {
         if (updatedProfile == null) {
             return ResponseEntity.notFound().build();
         }
+        log.info("Profile updated: {}", updatedProfile);
         return ResponseEntity.ok(updatedProfile);
     }
 

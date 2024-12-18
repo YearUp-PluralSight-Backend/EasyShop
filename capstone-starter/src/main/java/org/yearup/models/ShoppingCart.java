@@ -3,6 +3,7 @@ package org.yearup.models;
 import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class ShoppingCart
 {
@@ -43,4 +44,13 @@ public class ShoppingCart
         return total;
     }
 
+
+    @Override
+    public String toString() {
+        return "ShoppingCart{" +
+                "items=" + items.entrySet().stream()
+                .map(entry -> entry.getKey() + "=" + entry.getValue())
+                .collect(Collectors.joining(", ")) +
+                '}';
+    }
 }
