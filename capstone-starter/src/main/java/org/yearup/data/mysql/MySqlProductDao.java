@@ -205,6 +205,25 @@ public class MySqlProductDao extends MySqlDaoBase implements ProductDao {
         }
     }
 
+    @Override
+    public Double getProductPrice(int productId) {
+        String sql = "SELECT price FROM products WHERE product_id = ?";
+        try (Connection connection = getConnection()) {
+            PreparedStatement statement = connection.prepareStatement(sql);
+            statement.setInt(1, productId);
+
+            ResultSet row = statement.executeQuery();
+
+            if (row.next()) {
+                log.info("Retrieved product price with id: {}", productId);
+                return row.getDouble("price");
+            }
+        } catch (SQLException e) {
+            log.error("Failed to get product price with id: {}", productId);
+        }
+        return null;
+    }
+
     protected static Product mapRow(ResultSet row) throws SQLException {
         int productId = row.getInt("product_id");
         String name = row.getString("name");

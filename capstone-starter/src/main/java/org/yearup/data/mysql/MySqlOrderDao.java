@@ -5,15 +5,17 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.yearup.data.OrderDao;
+import org.yearup.data.OrderLineItemDao;
+import org.yearup.data.ProductDao;
 import org.yearup.data.ProfileDao;
-import org.yearup.models.Address;
-import org.yearup.models.Order;
-import org.yearup.models.Profile;
-import org.yearup.models.ShoppingCart;
+import org.yearup.models.*;
 
+import javax.crypto.spec.IvParameterSpec;
 import javax.sql.DataSource;
 import java.math.BigDecimal;
 import java.sql.*;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 
@@ -23,15 +25,20 @@ public class MySqlOrderDao extends MySqlDaoBase implements OrderDao {
     private static final Logger log = LoggerFactory.getLogger(MySqlOrderDao.class);
 
     private ProfileDao profileDao;
+    private OrderLineItemDao orderLineItemDao;
+    private ProductDao productDao;
 
     @Autowired
-    public MySqlOrderDao(DataSource dataSource, ProfileDao profileDao) {
+    public MySqlOrderDao(DataSource dataSource, ProfileDao profileDao, OrderLineItemDao orderLineItemDao, ProductDao productDao) {
         super(dataSource);
         this.profileDao = profileDao;
+        this.orderLineItemDao = orderLineItemDao;
+        this.productDao = productDao;
     }
 
     @Override
-    public Optional<Order> create(ShoppingCart cart, int userId) {
+    public Optional<OrderResult> create(ShoppingCart cart, int userId) {
+
 
         Optional<Profile> profileByUserId = profileDao.getProfileByUserId(userId);
         try (Connection connection = getConnection(); PreparedStatement statement = connection.prepareStatement("INSERT INTO orders (user_id, date, address, city, state, zip, shipping_amount) VALUES (?, ?, ?, ?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS)) {
@@ -49,13 +56,29 @@ public class MySqlOrderDao extends MySqlDaoBase implements OrderDao {
                 ResultSet generatedKeys = statement.getGeneratedKeys();
 
                 if (generatedKeys.next()) {
-                    // Retrieve the auto-incremented ID
                     int orderId = generatedKeys.getInt(1);
 
-                    // get the newly inserted category
+                    // cart items
+                    Map<Integer, ShoppingCartItem> items = cart.getItems();
 
+                    // save the order line items to the database
+                    for (Integer item : items.keySet()) {
+                        OrderLineItem orderLineItem = new OrderLineItem();
+                        orderLineItem.setOrderId(orderId);
+                        orderLineItem.setProductId(items.get(item).getProductId());
+                        orderLineItem.setSalesPrice(productDao.getProductPrice(items.get(item).getProductId()));
+                        orderLineItem.setQuantity(item);
+                        orderLineItem.setDiscount(0);
+                        orderLineItemDao.saveOrderLineItem(orderLineItem);
+                    }
+                    List<OrderLineItem> orderLineItemsByOrderId = orderLineItemDao.getOrderLineItemsByOrderId(orderId);
+                    log.info("Order line items: {}", orderLineItemsByOrderId);
+                    // get the newly inserted category
                     log.info("Order created: {}", orderId);
-                    return getByOrderId(orderId);}
+                    Optional<Order> byOrderId = getByOrderId(orderId);
+
+                    return Optional.of(new OrderResult(cart.getItems()));
+                }
             }
         } catch (Exception e) {
             log.error("Error creating order", e);
@@ -87,48 +110,6 @@ public class MySqlOrderDao extends MySqlDaoBase implements OrderDao {
         }
         return Optional.empty();
 
-    }
-
-    @Override
-    public Optional<Order> update(Order order) {
-
-        try (Connection connection = getConnection(); PreparedStatement statement = connection.prepareStatement("UPDATE orders SET user_id = ?, date = ?, address = ?, city = ?, state = ?, zip = ?, shipping_amount = ? WHERE order_id = ?")) {
-            statement.setInt(1, order.getUserId());
-            statement.setDate(2, order.getOrderDate());
-            statement.setString(3, order.getShippingAddress().getStreet());
-            statement.setString(4, order.getShippingAddress().getCity());
-            statement.setString(5, order.getShippingAddress().getState());
-            statement.setString(6, order.getShippingAddress().getZipCode());
-            statement.setBigDecimal(7, order.getShippingAmount());
-            statement.setInt(8, order.getOrderId());
-            statement.executeUpdate();
-            log.info("Order updated: {}", order);
-            Optional<Order> byOrderId = getByOrderId(order.getOrderId());
-            if (byOrderId.isPresent()) {
-                return byOrderId;
-            }
-        } catch (Exception e) {
-            log.error("Error updating order", e);
-            return Optional.empty();
-        }
-        return Optional.of(order);
-    }
-
-    @Override
-    public Optional<Order> delete(int id) {
-        Optional<Order> orderToDelete = getByOrderId(id);
-        if (orderToDelete.isPresent()) {
-            try (Connection connection = getConnection();
-                 PreparedStatement statement = connection.prepareStatement("DELETE FROM orders WHERE order_id = ?")) {
-                statement.setInt(1, id);
-                statement.executeUpdate();
-                log.info("Order deleted: {}", orderToDelete);
-                return orderToDelete;
-            } catch (Exception e) {
-                log.error("Error deleting order", e);
-            }
-        }
-        return Optional.empty();
     }
 
 
