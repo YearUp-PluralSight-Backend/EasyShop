@@ -14,6 +14,7 @@ import org.yearup.data.OrderDao;
 import org.yearup.data.ShoppingCartDao;
 import org.yearup.data.UserDao;
 import org.yearup.models.Order;
+import org.yearup.models.OrderResult;
 import org.yearup.models.ShoppingCart;
 import org.yearup.models.User;
 
@@ -41,8 +42,8 @@ public class OrderController {
 
     @PostMapping
     @PreAuthorize("hasRole('ROLE_USER')")
-    public ResponseEntity<Order> createOrder(Principal principal) {
-        Optional<Order> newOrder = Optional.empty();
+    public ResponseEntity<OrderResult> createOrder(Principal principal) {
+        Optional<OrderResult> newOrder = Optional.empty();
         // get the currently logged in username
         String userName = principal.getName();
         // find database user by userId
@@ -55,7 +56,7 @@ public class OrderController {
             newOrder = orderDao.create(byUserId.get(), userId);
 
         }
-        log.info("Order created: {}", newOrder);
+        log.info("Order created: {}", newOrder.get());
         return newOrder.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.status(500).build());
 
     }
