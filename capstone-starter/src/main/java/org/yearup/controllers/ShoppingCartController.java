@@ -89,6 +89,7 @@ public class ShoppingCartController {
             int userId = user.getId();
 
             // use the shoppingcartDao to update the product in the cart and return the cart
+            log.info("Updated product in cart for user: {}", userId);
             return ResponseEntity.ok(shoppingCartDao.updateProductInCart(userId, productId, quantity).orElse(null));
         } catch (Exception e) {
             log.error("Error updating product in cart", e);
@@ -99,5 +100,22 @@ public class ShoppingCartController {
 
     // add a DELETE method to clear all products from the current users cart
     // https://localhost:8080/cart
+    @DeleteMapping
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<ShoppingCart> clearCart(Principal principal) {
+        try {
+            // get the currently logged in username
+            String userName = principal.getName();
+            // find database user by userId
+            User user = userDao.getByUserName(userName);
+            int userId = user.getId();
 
+            // use the shoppingcartDao to clear the cart and return the cart
+            log.info("Cleared cart for user: {}", userId);
+            return ResponseEntity.ok(shoppingCartDao.clearCart(userId).orElse(null));
+        } catch (Exception e) {
+            log.error("Error clearing cart", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+    }
 }

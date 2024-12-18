@@ -85,6 +85,17 @@ public class MySqlShoppingCartDao extends MySqlDaoBase implements ShoppingCartDa
 
     @Override
     public Optional<ShoppingCart> clearCart(int userId) {
-        return Optional.empty();
+
+        try (Connection connection = getConnection(); PreparedStatement ps = connection.prepareStatement("DELETE FROM shopping_cart WHERE user_id = ?")) {
+            ps.setInt(1, userId);
+            ps.executeUpdate();
+
+            log.info("Cleared cart for user: {}", userId);
+            return Optional.of(new ShoppingCart());
+
+        } catch (Exception e) {
+            log.error("Error occurred while clearing cart", e);
+            return Optional.empty();
+        }
     }
 }
