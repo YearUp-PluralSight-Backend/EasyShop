@@ -11,7 +11,7 @@ import java.util.Optional;
 @Component
 public interface OrderDao {
 
-    Optional<OrderResult> create(ShoppingCart shoppingCart, int userId);
+    Optional<Order> create(Order order);
     Optional<Order> getByOrderId(int id);
 //    Optional<Order> update(Order order);
 //    Optional<Order> delete(int id);

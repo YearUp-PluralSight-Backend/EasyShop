@@ -7,6 +7,7 @@ import org.yearup.data.OrderLineItemDao;
 import org.yearup.models.OrderLineItem;
 
 import javax.sql.DataSource;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -23,13 +24,14 @@ public class MySqlOrderLineItemDao extends MySqlDaoBase implements OrderLineItem
 
     @Override
     public List<OrderLineItem> getOrderLineItemsByOrderId(int id) {
+        List<OrderLineItem> orderLineItems = new ArrayList<>(); // Initialize a list to store all items
 
-        try(var connection = getConnection()) {
+        try (var connection = getConnection()) {
             var sql = "SELECT * FROM order_line_items WHERE order_id = ?";
-            try(var statement = connection.prepareStatement(sql)) {
+            try (var statement = connection.prepareStatement(sql)) {
                 statement.setInt(1, id);
-                try(var resultSet = statement.executeQuery()) {
-                    if(resultSet.next()) {
+                try (var resultSet = statement.executeQuery()) {
+                    while (resultSet.next()) { // Use `while` to process all rows
                         var orderLineItem = new OrderLineItem(
                                 resultSet.getInt("order_line_item_id"),
                                 resultSet.getInt("order_id"),
@@ -38,16 +40,16 @@ public class MySqlOrderLineItemDao extends MySqlDaoBase implements OrderLineItem
                                 resultSet.getInt("quantity"),
                                 resultSet.getDouble("discount")
                         );
-                        log.info("Order line item found {}", orderLineItem);
-                        return List.of(orderLineItem);
+                        log.info("Order line item found: {}", orderLineItem);
+                        orderLineItems.add(orderLineItem); // Add the item to the list
                     }
                 }
             }
         } catch (Exception e) {
-            log.error("Error getting order line item by id", e);
-            return List.of();
-    }
-        return List.of();
+            log.error("Error getting order line items by order_id", e);
+        }
+
+        return orderLineItems; // Return the full list of items
     }
 
     @Override

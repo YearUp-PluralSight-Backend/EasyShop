@@ -11,5 +11,5 @@ import java.util.Optional;
 public interface ProfileDao {
     Profile create(Profile profile);
     Optional<Profile> getProfileByUserId(int userId);
-    Optional<Profile> updateProfile(Profile profile);
+    Optional<Profile> updateProfile(int userId, Profile profile);
 }

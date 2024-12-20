@@ -50,9 +50,8 @@ public class MySqlProfileDao extends MySqlDaoBase implements ProfileDao {
     @Override
     public Optional<Profile> getProfileByUserId(int userId) {
 
-        try (Connection connection = getConnection()) {
-            String sql = "SELECT * FROM profiles WHERE user_id = ?";
-            PreparedStatement ps = connection.prepareStatement(sql);
+        String sql = "SELECT * FROM profiles WHERE user_id = ?";
+        try (Connection connection = getConnection(); PreparedStatement ps = connection.prepareStatement(sql);) {
             ps.setInt(1, userId);
 
             ResultSet rs = ps.executeQuery();
@@ -72,7 +71,7 @@ public class MySqlProfileDao extends MySqlDaoBase implements ProfileDao {
     }
 
     @Override
-    public Optional<Profile> updateProfile(Profile profile) {
+    public Optional<Profile> updateProfile(int userId, Profile profile) {
 
         try(Connection connection = getConnection()) {
             String sql = "UPDATE profiles SET first_name = ?, last_name = ?, phone = ?, email = ?, address = ?, city = ?, state = ?, zip = ? WHERE user_id = ?";
@@ -85,7 +84,7 @@ public class MySqlProfileDao extends MySqlDaoBase implements ProfileDao {
             ps.setString(6, profile.getCity());
             ps.setString(7, profile.getState());
             ps.setString(8, profile.getZip());
-            ps.setInt(9, profile.getUserId());
+            ps.setInt(9, userId);
 
             int rows = ps.executeUpdate();
             if (rows > 0) {

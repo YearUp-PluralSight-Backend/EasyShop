@@ -54,8 +54,15 @@ public class ProfilesController {
 
     @PutMapping("")
     @PreAuthorize("permitAll()")
-    public ResponseEntity<Profile> updateProfile(@RequestBody Profile profile) {
-        Profile updatedProfile = profileDao.updateProfile(profile).orElse(null);
+    public ResponseEntity<Profile> updateProfile(Principal principal, @RequestBody Profile profile) {
+        // get the currently logged in username
+        String userName = principal.getName();
+        // find database user by userId
+        User user = userDao.getByUserName(userName);
+        int userId = user.getId();
+
+
+        Profile updatedProfile = profileDao.updateProfile(userId, profile).orElse(null);
 
         if (updatedProfile == null) {
             return ResponseEntity.notFound().build();

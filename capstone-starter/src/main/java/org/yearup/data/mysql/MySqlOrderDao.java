@@ -25,59 +25,38 @@ public class MySqlOrderDao extends MySqlDaoBase implements OrderDao {
     private static final Logger log = LoggerFactory.getLogger(MySqlOrderDao.class);
 
     private ProfileDao profileDao;
-    private OrderLineItemDao orderLineItemDao;
     private ProductDao productDao;
 
     @Autowired
-    public MySqlOrderDao(DataSource dataSource, ProfileDao profileDao, OrderLineItemDao orderLineItemDao, ProductDao productDao) {
+    public MySqlOrderDao(DataSource dataSource, ProfileDao profileDao, ProductDao productDao) {
         super(dataSource);
         this.profileDao = profileDao;
-        this.orderLineItemDao = orderLineItemDao;
         this.productDao = productDao;
     }
 
     @Override
-    public Optional<OrderResult> create(ShoppingCart cart, int userId) {
+    public Optional<Order> create(Order order) {
 
-
-        Optional<Profile> profileByUserId = profileDao.getProfileByUserId(userId);
         try (Connection connection = getConnection(); PreparedStatement statement = connection.prepareStatement("INSERT INTO orders (user_id, date, address, city, state, zip, shipping_amount) VALUES (?, ?, ?, ?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS)) {
-            statement.setInt(1, userId);
-            statement.setDate(2, new java.sql.Date(System.currentTimeMillis()));
-            statement.setString(3, profileByUserId.get().getAddress());
-            statement.setString(4, profileByUserId.get().getCity());
-            statement.setString(5, profileByUserId.get().getState());
-            statement.setString(6, profileByUserId.get().getZip());
-            statement.setBigDecimal(7, new BigDecimal("10.00"));
+            statement.setInt(1, order.getUserId());
+            statement.setDate(2, order.getOrderDate());
+            statement.setString(3, order.getShippingAddress().getStreet());
+            statement.setString(4, order.getShippingAddress().getCity());
+            statement.setString(5, order.getShippingAddress().getState());
+            statement.setString(6, order.getShippingAddress().getZipCode());
+            statement.setBigDecimal(7, order.getShippingAmount());
             int rowsAffected = statement.executeUpdate();
-
-            if (rowsAffected > 0) {
-                // Retrieve the generated keys
-                ResultSet generatedKeys = statement.getGeneratedKeys();
-
-                if (generatedKeys.next()) {
-                    int orderId = generatedKeys.getInt(1);
-
-                    // cart items
-                    Map<Integer, ShoppingCartItem> items = cart.getItems();
-
-                    // save the order line items to the database
-                    for (Integer item : items.keySet()) {
-                        OrderLineItem orderLineItem = new OrderLineItem();
-                        orderLineItem.setOrderId(orderId);
-                        orderLineItem.setProductId(items.get(item).getProductId());
-                        orderLineItem.setSalesPrice(productDao.getProductPrice(items.get(item).getProductId()));
-                        orderLineItem.setQuantity(item);
-                        orderLineItem.setDiscount(0);
-                        orderLineItemDao.saveOrderLineItem(orderLineItem);
+            if (rowsAffected == 1) {
+                try (ResultSet resultSet = statement.getGeneratedKeys()) {
+                    if (resultSet.next()) {
+                        int orderId = resultSet.getInt(1);
+                        order.setOrderId(orderId);
+                        log.info("Order created: {}", order);
+                        return Optional.of(order);
                     }
-                    List<OrderLineItem> orderLineItemsByOrderId = orderLineItemDao.getOrderLineItemsByOrderId(orderId);
-                    log.info("Order line items: {}", orderLineItemsByOrderId);
-                    // get the newly inserted category
-                    log.info("Order created: {}", orderId);
-                    Optional<Order> byOrderId = getByOrderId(orderId);
-
-                    return Optional.of(new OrderResult(cart.getItems()));
+                } catch (Exception e) {
+                    log.error("Error creating order", e);
+                    return Optional.empty();
                 }
             }
         } catch (Exception e) {
