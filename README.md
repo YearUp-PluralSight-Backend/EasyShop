@@ -20,7 +20,7 @@ This project is an E-Commerce API and website built using Java and Spring Boot. 
 ### Bug 1: Incorrect Product Filtering
 **Description**: Products were not being filtered correctly when multiple query parameters (e.g., `minPrice` and `color`) were provided.  
 
-**Solution**
+- **Solution**
 ![Screenshot 2024-12-20 at 01 12 36](https://github.com/user-attachments/assets/8319b314-7fc7-4f33-8e7e-434c859089c2)
 
 
@@ -29,6 +29,9 @@ This project is an E-Commerce API and website built using Java and Spring Boot. 
 
 ### Bug 2: Update Product Error 
 **Description**: Product update was not working properly due to add the product instead of modify.  
+
+- **Solution**
+![Screenshot 2024-12-20 at 01 23 20](https://github.com/user-attachments/assets/4df70baf-b383-4834-aab2-2cc50610c813)
 
 
 ---
