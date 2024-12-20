@@ -12,8 +12,19 @@ public interface ShoppingCartDao {
     // add additional method signatures here
     Optional<ShoppingCart> addProductToCart(int userId, int productId);
 
+    Boolean checkExistingProductInCart(int userId, int productId);
+
+    Integer getQuantityOfProductInCart(int userId, int productId);
+
     Optional<ShoppingCart> updateProductInCart(int userId, int productId, int quantity);
 
     Optional<ShoppingCart> clearCart(int userId);
+
+
+    Optional<ShoppingCart> removeProductFromCart(int userId, int productId);
+
+    Optional<ShoppingCart> checkout(int userId);
+
+
 
 }

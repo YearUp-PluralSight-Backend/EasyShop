@@ -14,6 +14,7 @@ import org.yearup.models.ShoppingCart;
 import org.yearup.models.User;
 
 import java.security.Principal;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/cart")
@@ -58,19 +59,29 @@ public class ShoppingCartController {
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ShoppingCart> addProductToCart(Principal principal, @PathVariable int productId) {
         try {
-            // get the currently logged in username
+            // Get the currently logged-in username
             String userName = principal.getName();
-            // find database user by userId
+            // Find database user by username
             User user = userDao.getByUserName(userName);
             int userId = user.getId();
 
-            // use the shoppingcartDao to add the product to the cart and return the cart
-            log.info("Added product to cart for user: {}", userId);
-            return ResponseEntity.ok(shoppingCartDao.addProductToCart(userId, productId).orElse(null));
+            // Check if the product already exists in the cart
+            if (shoppingCartDao.checkExistingProductInCart(userId, productId)) {
+                // If it exists, update the product quantity
+                shoppingCartDao.updateProductInCart(userId, productId, shoppingCartDao.getQuantityOfProductInCart(userId, productId) + 1);
+            } else {
+                // If the product doesn't exist in the cart, add it
+                log.info("Added product to cart for user: {}", userId);
+                shoppingCartDao.addProductToCart(userId, productId);
+            }
+
+            // Return the updated shopping cart
+            Optional<ShoppingCart> updatedCart = shoppingCartDao.getByUserId(userId); // Assuming this method exists
+            return ResponseEntity.ok(updatedCart.get());
+
         } catch (Exception e) {
             log.error("Error adding product to cart", e);
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
-
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);  // Change to INTERNAL_SERVER_ERROR
         }
     }
 

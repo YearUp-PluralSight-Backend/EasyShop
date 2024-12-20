@@ -68,6 +68,42 @@ public class MySqlShoppingCartDao extends MySqlDaoBase implements ShoppingCartDa
         }
     }
 
+    @Override
+    public Boolean checkExistingProductInCart(int userId, int productId) {
+
+        String sql = "SELECT * FROM shopping_cart WHERE user_id = ? AND product_id = ?";
+        try (Connection connection = getConnection(); PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setInt(1, userId);
+            ps.setInt(2, productId);
+            try(ResultSet rs = ps.executeQuery()) {
+                return rs.next();
+            }
+
+        } catch (Exception e) {
+            log.error("Error occurred while checking existing product in cart", e);
+            return false;
+        }
+    }
+
+    @Override
+    public Integer getQuantityOfProductInCart(int userId, int productId) {
+
+            String sql = "SELECT quantity FROM shopping_cart WHERE user_id = ? AND product_id = ?";
+            try (Connection connection = getConnection(); PreparedStatement ps = connection.prepareStatement(sql)) {
+                ps.setInt(1, userId);
+                ps.setInt(2, productId);
+                try(ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        return rs.getInt("quantity");
+                    }
+                }
+
+            } catch (Exception e) {
+                log.error("Error occurred while getting quantity of product in cart", e);
+            }
+            return 0;
+    }
+
 
     @Override
     public Optional<ShoppingCart> updateProductInCart(int userId, int productId, int quantity) {
@@ -103,5 +139,15 @@ public class MySqlShoppingCartDao extends MySqlDaoBase implements ShoppingCartDa
             log.error("Error occurred while clearing cart", e);
             return Optional.empty();
         }
+    }
+
+    @Override
+    public Optional<ShoppingCart> removeProductFromCart(int userId, int productId) {
+        return Optional.empty();
+    }
+
+    @Override
+    public Optional<ShoppingCart> checkout(int userId) {
+        return Optional.empty();
     }
 }
