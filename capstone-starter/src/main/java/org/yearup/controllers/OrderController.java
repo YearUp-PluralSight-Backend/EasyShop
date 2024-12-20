@@ -10,8 +10,18 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+<<<<<<< HEAD
 import org.yearup.data.*;
 import org.yearup.models.*;
+=======
+import org.yearup.data.OrderDao;
+import org.yearup.data.ShoppingCartDao;
+import org.yearup.data.UserDao;
+import org.yearup.models.Order;
+import org.yearup.models.OrderResult;
+import org.yearup.models.ShoppingCart;
+import org.yearup.models.User;
+>>>>>>> c328679789e2e81b7e9582bb76d74bb9be478e63
 
 import java.math.BigDecimal;
 import java.security.Principal;
@@ -45,8 +55,12 @@ public class OrderController {
     @PostMapping
     @PreAuthorize("hasRole('ROLE_USER')")
     public ResponseEntity<OrderResult> createOrder(Principal principal) {
+<<<<<<< HEAD
 
 
+=======
+        Optional<OrderResult> newOrder = Optional.empty();
+>>>>>>> c328679789e2e81b7e9582bb76d74bb9be478e63
         // get the currently logged in username
         String userName = principal.getName();
         // find database user by userId
@@ -103,6 +117,12 @@ public class OrderController {
 
 
         }
+<<<<<<< HEAD
+=======
+        log.info("Order created: {}", newOrder.get());
+        return newOrder.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.status(500).build());
+
+>>>>>>> c328679789e2e81b7e9582bb76d74bb9be478e63
     }
 
 

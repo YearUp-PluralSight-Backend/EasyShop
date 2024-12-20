@@ -25,17 +25,33 @@ public class MySqlOrderDao extends MySqlDaoBase implements OrderDao {
     private static final Logger log = LoggerFactory.getLogger(MySqlOrderDao.class);
 
     private ProfileDao profileDao;
+<<<<<<< HEAD
     private ProductDao productDao;
 
     @Autowired
     public MySqlOrderDao(DataSource dataSource, ProfileDao profileDao, ProductDao productDao) {
         super(dataSource);
         this.profileDao = profileDao;
+=======
+    private OrderLineItemDao orderLineItemDao;
+    private ProductDao productDao;
+
+    @Autowired
+    public MySqlOrderDao(DataSource dataSource, ProfileDao profileDao, OrderLineItemDao orderLineItemDao, ProductDao productDao) {
+        super(dataSource);
+        this.profileDao = profileDao;
+        this.orderLineItemDao = orderLineItemDao;
+>>>>>>> c328679789e2e81b7e9582bb76d74bb9be478e63
         this.productDao = productDao;
     }
 
     @Override
+<<<<<<< HEAD
     public Optional<Order> create(Order order) {
+=======
+    public Optional<OrderResult> create(ShoppingCart cart, int userId) {
+
+>>>>>>> c328679789e2e81b7e9582bb76d74bb9be478e63
 
         try (Connection connection = getConnection(); PreparedStatement statement = connection.prepareStatement("INSERT INTO orders (user_id, date, address, city, state, zip, shipping_amount) VALUES (?, ?, ?, ?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS)) {
             statement.setInt(1, order.getUserId());
@@ -46,6 +62,7 @@ public class MySqlOrderDao extends MySqlDaoBase implements OrderDao {
             statement.setString(6, order.getShippingAddress().getZipCode());
             statement.setBigDecimal(7, order.getShippingAmount());
             int rowsAffected = statement.executeUpdate();
+<<<<<<< HEAD
             if (rowsAffected == 1) {
                 try (ResultSet resultSet = statement.getGeneratedKeys()) {
                     if (resultSet.next()) {
@@ -57,6 +74,36 @@ public class MySqlOrderDao extends MySqlDaoBase implements OrderDao {
                 } catch (Exception e) {
                     log.error("Error creating order", e);
                     return Optional.empty();
+=======
+
+            if (rowsAffected > 0) {
+                // Retrieve the generated keys
+                ResultSet generatedKeys = statement.getGeneratedKeys();
+
+                if (generatedKeys.next()) {
+                    int orderId = generatedKeys.getInt(1);
+
+                    // cart items
+                    Map<Integer, ShoppingCartItem> items = cart.getItems();
+
+                    // save the order line items to the database
+                    for (Integer item : items.keySet()) {
+                        OrderLineItem orderLineItem = new OrderLineItem();
+                        orderLineItem.setOrderId(orderId);
+                        orderLineItem.setProductId(items.get(item).getProductId());
+                        orderLineItem.setSalesPrice(productDao.getProductPrice(items.get(item).getProductId()));
+                        orderLineItem.setQuantity(item);
+                        orderLineItem.setDiscount(0);
+                        orderLineItemDao.saveOrderLineItem(orderLineItem);
+                    }
+                    List<OrderLineItem> orderLineItemsByOrderId = orderLineItemDao.getOrderLineItemsByOrderId(orderId);
+                    log.info("Order line items: {}", orderLineItemsByOrderId);
+                    // get the newly inserted category
+                    log.info("Order created: {}", orderId);
+                    Optional<Order> byOrderId = getByOrderId(orderId);
+
+                    return Optional.of(new OrderResult(cart.getItems()));
+>>>>>>> c328679789e2e81b7e9582bb76d74bb9be478e63
                 }
             }
         } catch (Exception e) {
