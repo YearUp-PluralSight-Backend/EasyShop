@@ -28,8 +28,9 @@ public class MySqlShoppingCartDao extends MySqlDaoBase implements ShoppingCartDa
     @Override
     public Optional<ShoppingCart> getByUserId(int userId) {
 
+        String sql = "SELECT * FROM shopping_cart WHERE user_id = ?";
         ShoppingCart cart = new ShoppingCart();
-        try (Connection connection = getConnection(); PreparedStatement ps = connection.prepareStatement("SELECT * FROM shopping_cart WHERE user_id = ?")) {
+        try (Connection connection = getConnection(); PreparedStatement ps = connection.prepareStatement(sql)) {
             // get all items in the cart and return the cart
             ps.setInt(1, userId);
             try(ResultSet rs = ps.executeQuery()) {
@@ -52,7 +53,8 @@ public class MySqlShoppingCartDao extends MySqlDaoBase implements ShoppingCartDa
     @Override
     public Optional<ShoppingCart> addProductToCart(int userId, int productId) {
 
-        try (Connection connection = getConnection(); PreparedStatement ps = connection.prepareStatement("INSERT INTO shopping_cart (user_id, product_id, quantity) VALUES (?, ?, 1)")) {
+        String sql = "INSERT INTO shopping_cart (user_id, product_id, quantity) VALUES (?, ?, 1)";
+        try (Connection connection = getConnection(); PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setInt(1, userId);
             ps.setInt(2, productId);
             ps.executeUpdate();
@@ -70,7 +72,8 @@ public class MySqlShoppingCartDao extends MySqlDaoBase implements ShoppingCartDa
     @Override
     public Optional<ShoppingCart> updateProductInCart(int userId, int productId, int quantity) {
 
-        try (Connection connection = getConnection(); PreparedStatement ps = connection.prepareStatement("UPDATE shopping_cart SET quantity = ? WHERE user_id = ? AND product_id = ?")) {
+        String sql = "UPDATE shopping_cart SET quantity = ? WHERE user_id = ? AND product_id = ?";
+        try (Connection connection = getConnection(); PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setInt(1, quantity);
             ps.setInt(2, userId);
             ps.setInt(3, productId);
@@ -88,7 +91,8 @@ public class MySqlShoppingCartDao extends MySqlDaoBase implements ShoppingCartDa
     @Override
     public Optional<ShoppingCart> clearCart(int userId) {
 
-        try (Connection connection = getConnection(); PreparedStatement ps = connection.prepareStatement("DELETE FROM shopping_cart WHERE user_id = ?")) {
+        String sql = "DELETE FROM shopping_cart WHERE user_id = ?";
+        try (Connection connection = getConnection(); PreparedStatement ps = connection.prepareStatement(sql)) {
             ps.setInt(1, userId);
             ps.executeUpdate();
 

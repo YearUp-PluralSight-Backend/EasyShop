@@ -37,7 +37,8 @@ public class MySqlOrderDao extends MySqlDaoBase implements OrderDao {
     @Override
     public Optional<Order> create(Order order) {
 
-        try (Connection connection = getConnection(); PreparedStatement statement = connection.prepareStatement("INSERT INTO orders (user_id, date, address, city, state, zip, shipping_amount) VALUES (?, ?, ?, ?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS)) {
+        String sql = "INSERT INTO orders (user_id, date, address, city, state, zip, shipping_amount) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        try (Connection connection = getConnection(); PreparedStatement statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             statement.setInt(1, order.getUserId());
             statement.setDate(2, order.getOrderDate());
             statement.setString(3, order.getShippingAddress().getStreet());
@@ -72,7 +73,8 @@ public class MySqlOrderDao extends MySqlDaoBase implements OrderDao {
     @Override
     public Optional<Order> getByOrderId(int id) {
 
-        try (Connection connection = getConnection(); PreparedStatement statement = connection.prepareStatement("SELECT * FROM orders WHERE order_id = ?")) {
+        String sql = "SELECT * FROM orders WHERE order_id = ?";
+        try (Connection connection = getConnection(); PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setInt(1, id);
             statement.execute();
             try (ResultSet resultSet = statement.getResultSet()) {
